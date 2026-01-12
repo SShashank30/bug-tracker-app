@@ -1,28 +1,28 @@
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
+require('dotenv').config();
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-// DATABASE CONNECTION
 const db = mysql.createPool({
-  host: '127.0.0.1',
-  user: 'root',
-  password: '', // DBngin usually has no password. If it does, type it here.
-  database: 'bugtracker',
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT,
+  ssl: {
+      rejectUnauthorized: true
+  }
 });
 
-// TEST CONNECTION
 db.getConnection((err) => {
-  if (err) console.log("❌ DB Error: " + err);
-  else console.log("✅ Connected to MySQL Database!");
+  if (err) console.log("DB Error: " + err);
+  else console.log("Connected to MySQL Database!");
 });
 
-// --- API ROUTES ---
-
-// 1. GET ALL TICKETS
 app.get('/api/tickets', (req, res) => {
   db.query("SELECT * FROM tickets ORDER BY created_at DESC", (err, data) => {
     if (err) return res.status(500).json(err);
@@ -30,7 +30,6 @@ app.get('/api/tickets', (req, res) => {
   });
 });
 
-// 2. CREATE TICKET
 app.post('/api/tickets', (req, res) => {
   const q = "INSERT INTO tickets (`title`, `description`, `assignee`, `status`, `priority`) VALUES (?)";
   const values = [
@@ -46,7 +45,6 @@ app.post('/api/tickets', (req, res) => {
   });
 });
 
-// 3. DELETE TICKET
 app.delete('/api/tickets/:id', (req, res) => {
   db.query("DELETE FROM tickets WHERE id = ?", [req.params.id], (err, data) => {
     if (err) return res.status(500).json(err);
@@ -54,6 +52,7 @@ app.delete('/api/tickets/:id', (req, res) => {
   });
 });
 
-app.listen(5000, () => {
-  console.log("✅ Server running on port 5000");
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
