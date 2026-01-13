@@ -59,7 +59,7 @@ app.listen(PORT, () => {
 
 const path = require("path");
 
-__dirname = path.resolve();
+
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../client/build")));
